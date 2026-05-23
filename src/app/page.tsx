@@ -98,12 +98,14 @@ export default function Home() {
               </button>
             )}
             {current < PANELS.length - 1 && (
-              <button
-                onClick={() => goTo(current + 1)}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-rose text-white border-2 border-ink flex items-center justify-center text-sm font-bold transition-all duration-150 active:scale-90 hover:brightness-110 shadow-[2px_2px_0_var(--color-ink)]"
-              >
-                ›
-              </button>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 z-30" style={{ animation: "nudge-right 2s ease-in-out infinite" }}>
+                <button
+                  onClick={() => goTo(current + 1)}
+                  className="flex items-center gap-1.5 bg-rose text-white border-2 border-ink px-3.5 py-2 font-display text-[0.6rem] font-black uppercase tracking-wider transition-all duration-150 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 shadow-[2px_2px_0_var(--color-ink)]"
+                >
+                  Next <span className="text-sm leading-none">›</span>
+                </button>
+              </div>
             )}
 
             {/* Panels */}
