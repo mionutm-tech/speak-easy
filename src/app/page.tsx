@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import PanelNav from "@/components/PanelNav";
 import BreathingPanel from "@/components/BreathingPanel";
 import BoostPanel from "@/components/BoostPanel";
 import PanicPanel from "@/components/PanicPanel";
@@ -10,28 +9,26 @@ import HecklePanel from "@/components/HecklePanel";
 import CrowdPanel from "@/components/CrowdPanel";
 
 const PANELS = [
-  { id: "breathe", label: "Breathe" },
-  { id: "boost", label: "Boost" },
-  { id: "panic", label: "Panic" },
-  { id: "heckle", label: "Heckle" },
-  { id: "crowd", label: "Crowd" },
+  { id: "breathe", label: "Breathe", icon: "◉" },
+  { id: "boost", label: "Mantra", icon: "♦" },
+  { id: "panic", label: "Panic", icon: "!" },
+  { id: "heckle", label: "Heckle", icon: "⚡" },
+  { id: "crowd", label: "Crowd", icon: "☺" },
 ];
 
 export default function Home() {
   const [entered, setEntered] = useState(false);
   const [fadeWelcome, setFadeWelcome] = useState(false);
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState<"left" | "right">("right");
 
   const enterApp = useCallback(() => {
     setFadeWelcome(true);
-    setTimeout(() => setEntered(true), 800);
+    setTimeout(() => setEntered(true), 600);
   }, []);
 
   const goTo = useCallback(
     (index: number) => {
-      if (index === current || index < 0 || index >= PANELS.length) return;
-      setDirection(index > current ? "right" : "left");
+      if (index < 0 || index >= PANELS.length || index === current) return;
       setCurrent(index);
     },
     [current]
@@ -40,24 +37,21 @@ export default function Home() {
   useEffect(() => {
     if (!entered) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo(current + 1);
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") goTo(current - 1);
+      if (e.key === "ArrowRight") goTo(current + 1);
+      if (e.key === "ArrowLeft") goTo(current - 1);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [entered, current, goTo]);
 
-  // Touch swipe support
   useEffect(() => {
     if (!entered) return;
     let startX = 0;
     const onStart = (e: TouchEvent) => { startX = e.touches[0].clientX; };
     const onEnd = (e: TouchEvent) => {
       const dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 60) {
-        if (dx < 0) goTo(current + 1);
-        else goTo(current - 1);
-      }
+      if (dx < -50) goTo(current + 1);
+      if (dx > 50) goTo(current - 1);
     };
     window.addEventListener("touchstart", onStart, { passive: true });
     window.addEventListener("touchend", onEnd, { passive: true });
@@ -69,110 +63,102 @@ export default function Home() {
 
   return (
     <>
-      {!entered && (
-        <WelcomeScreen fading={fadeWelcome} onEnter={enterApp} />
-      )}
+      {!entered && <WelcomeScreen fading={fadeWelcome} onEnter={enterApp} />}
 
       {entered && (
-        <div className="flex flex-col h-full" style={{ animation: "fadeIn 0.6s ease" }}>
-          <PanelNav panels={PANELS} current={current} goTo={goTo} />
+        <div className="flex flex-col h-full" style={{ animation: "fade-in 0.4s ease" }}>
+          {/* Masthead */}
+          <header className="shrink-0 px-4 sm:px-6 pt-3 pb-2">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <h1 className="font-display text-xl font-black tracking-tight leading-none">
+                  SpeakEasy<span className="text-rose">!</span>
+                </h1>
+                <p className="text-[0.5rem] font-bold uppercase tracking-[0.2em] text-ink-faint mt-0.5">
+                  Your stage-fright survival kit
+                </p>
+              </div>
+              <p className="text-[0.5rem] font-bold uppercase tracking-[0.15em] text-ink-faint">
+                Vol. 01 &middot; Issue {String(current + 1).padStart(2, "0")}
+              </p>
+            </div>
+            <div className="border-t-2 border-ink mt-2" />
+            <div className="border-t border-ink mt-0.5" />
+          </header>
 
+          {/* Content */}
           <div className="relative flex-1 overflow-hidden">
-            {/* Side arrows */}
-            <button
-              onClick={() => goTo(current - 1)}
-              disabled={current === 0}
-              className="fixed left-1.5 sm:left-3 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-14 sm:h-14 rounded-full glass flex items-center justify-center text-lg sm:text-xl text-text-secondary transition-all duration-200 active:scale-90 disabled:opacity-0 disabled:pointer-events-none hover:bg-glass-hover"
-              aria-label="Previous"
-            >
-              ←
-            </button>
-            <button
-              onClick={() => goTo(current + 1)}
-              disabled={current === PANELS.length - 1}
-              className="fixed right-1.5 sm:right-3 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-14 sm:h-14 rounded-full glass flex items-center justify-center text-lg sm:text-xl text-text-secondary transition-all duration-200 active:scale-90 disabled:opacity-0 disabled:pointer-events-none hover:bg-glass-hover"
-              aria-label="Next"
-            >
-              →
-            </button>
-
-            {/* Bottom "Next" bar — very prominent */}
+            {/* Arrows */}
+            {current > 0 && (
+              <button
+                onClick={() => goTo(current - 1)}
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-cream border-2 border-ink flex items-center justify-center text-ink text-sm font-bold transition-all duration-150 active:scale-90 hover:bg-cream-dark"
+              >
+                ‹
+              </button>
+            )}
             {current < PANELS.length - 1 && (
               <button
                 onClick={() => goTo(current + 1)}
-                className="fixed bottom-14 left-1/2 -translate-x-1/2 z-40 px-5 py-2.5 glass rounded-full flex items-center gap-2 text-sm font-semibold text-peach-400 transition-all duration-200 active:scale-95 hover:bg-glass-hover shadow-lg"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-rose text-white border-2 border-ink flex items-center justify-center text-sm font-bold transition-all duration-150 active:scale-90 hover:brightness-110 shadow-[2px_2px_0_var(--color-ink)]"
               >
-                Next: {PANELS[current + 1].label}
-                <span className="text-lg leading-none">→</span>
+                ›
               </button>
             )}
 
             {/* Panels */}
-            <PanelSlot active={current === 0} direction={direction} index={0} current={current}>
-              <BreathingPanel />
-            </PanelSlot>
-            <PanelSlot active={current === 1} direction={direction} index={1} current={current}>
-              <BoostPanel />
-            </PanelSlot>
-            <PanelSlot active={current === 2} direction={direction} index={2} current={current}>
-              <PanicPanel />
-            </PanelSlot>
-            <PanelSlot active={current === 3} direction={direction} index={3} current={current}>
-              <HecklePanel />
-            </PanelSlot>
-            <PanelSlot active={current === 4} direction={direction} index={4} current={current}>
-              <CrowdPanel />
-            </PanelSlot>
+            <Panel active={current === 0} index={0} current={current}><BreathingPanel /></Panel>
+            <Panel active={current === 1} index={1} current={current}><BoostPanel /></Panel>
+            <Panel active={current === 2} index={2} current={current}><PanicPanel /></Panel>
+            <Panel active={current === 3} index={3} current={current}><HecklePanel /></Panel>
+            <Panel active={current === 4} index={4} current={current}><CrowdPanel /></Panel>
           </div>
 
-          {/* Dot indicators */}
-          <div className="fixed bottom-3.5 left-1/2 -translate-x-1/2 z-40 flex gap-2 px-3.5 py-2 glass-sm rounded-full">
-            {PANELS.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => goTo(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === current
-                    ? "w-6 bg-peach-400"
-                    : "w-2 bg-text-muted/30 hover:bg-text-muted/50"
-                }`}
-                aria-label={p.label}
-              />
-            ))}
-          </div>
+          {/* Bottom tab bar */}
+          <nav className="shrink-0 border-t-2 border-ink bg-cream">
+            <div className="flex">
+              {PANELS.map((p, i) => (
+                <button
+                  key={p.id}
+                  onClick={() => goTo(i)}
+                  className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 transition-colors duration-200 ${
+                    i === current ? "text-rose" : "text-ink-faint hover:text-ink-light"
+                  }`}
+                >
+                  <span className="text-sm font-bold leading-none">{p.icon}</span>
+                  <span className="text-[0.55rem] font-bold uppercase tracking-[0.1em]">{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
         </div>
       )}
     </>
   );
 }
 
-function PanelSlot({
+function Panel({
   active,
-  direction,
   index,
   current,
   children,
 }: {
   active: boolean;
-  direction: "left" | "right";
   index: number;
   current: number;
   children: React.ReactNode;
 }) {
-  const isLeft = index < current;
-  const isRight = index > current;
-
-  let transform = "translate-x-0 opacity-100";
-  if (isRight) transform = "translate-x-16 opacity-0 pointer-events-none";
-  if (isLeft) transform = "-translate-x-16 opacity-0 pointer-events-none";
-
   return (
     <div
-      className={`absolute inset-0 transition-all duration-400 ease-out overflow-y-auto px-4 sm:px-6 pb-24 pt-2 flex items-start justify-center ${transform} ${
-        active ? "z-10" : "z-0"
+      className={`absolute inset-0 overflow-y-auto px-4 sm:px-6 pb-4 transition-all duration-300 ease-out ${
+        active
+          ? "translate-x-0 opacity-100 z-10"
+          : index < current
+          ? "-translate-x-10 opacity-0 z-0 pointer-events-none"
+          : "translate-x-10 opacity-0 z-0 pointer-events-none"
       }`}
     >
-      <div className="w-full max-w-lg">{children}</div>
+      <div className="max-w-lg mx-auto">{children}</div>
     </div>
   );
 }

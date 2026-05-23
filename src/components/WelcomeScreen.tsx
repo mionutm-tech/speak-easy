@@ -8,16 +8,15 @@ interface Props {
 }
 
 const LINES = [
-  { text: "Your hands are sweaty.", color: "text-peach-400" },
-  { text: "Your heart is racing.", color: "text-coral" },
-  { text: "Welcome — you're in the right place, Maria.", color: "text-lavender-300", big: true },
+  { text: "Your hands are sweaty.", style: "" },
+  { text: "Your heart is racing.", style: "text-rose" },
+  { text: "Welcome — you're in the right place, Maria.", style: "font-semibold not-italic mt-3" },
 ];
 
 export default function WelcomeScreen({ fading, onEnter }: Props) {
   const [typed, setTyped] = useState<string[]>([]);
   const [lineIdx, setLineIdx] = useState(0);
   const [charIdx, setCharIdx] = useState(0);
-  const [showCursor, setShowCursor] = useState(true);
   const [showButton, setShowButton] = useState(false);
   const started = useRef(false);
 
@@ -29,7 +28,7 @@ export default function WelcomeScreen({ fading, onEnter }: Props) {
 
   useEffect(() => {
     if (lineIdx >= LINES.length) {
-      setTimeout(() => setShowButton(true), 500);
+      setTimeout(() => setShowButton(true), 400);
       return;
     }
     if (typed.length === 0) return;
@@ -43,64 +42,68 @@ export default function WelcomeScreen({ fading, onEnter }: Props) {
           return next;
         });
         setCharIdx(charIdx + 1);
-      }, 50);
+      }, 45);
       return () => clearTimeout(t);
     } else {
       const t = setTimeout(() => {
-        setShowCursor(false);
-        setTimeout(() => {
-          setLineIdx(lineIdx + 1);
-          setCharIdx(0);
-          setTyped((prev) => [...prev, ""]);
-          setShowCursor(true);
-        }, 300);
-      }, 400);
+        setLineIdx(lineIdx + 1);
+        setCharIdx(0);
+        setTyped((prev) => [...prev, ""]);
+      }, 500);
       return () => clearTimeout(t);
     }
   }, [lineIdx, charIdx, typed.length]);
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center px-6 bg-gradient-to-br from-peach-50 via-lavender-100 to-mint-100 transition-all duration-700 ${
-        fading ? "opacity-0 scale-[1.02]" : "opacity-100 scale-100"
+      className={`fixed inset-0 z-50 flex items-center justify-center px-6 bg-cream transition-all duration-500 ${
+        fading ? "opacity-0 scale-[1.01]" : "opacity-100"
       }`}
     >
-      <div className="text-center max-w-sm sm:max-w-lg">
-        <div className="text-5xl mb-6" style={{ animation: "float 3s ease-in-out infinite" }}>
-          🎤
+      <div className="text-center max-w-sm">
+        {/* Masthead */}
+        <div className="mb-8">
+          <div className="border-t-2 border-ink" />
+          <div className="border-t border-ink mt-0.5 mb-3" />
+          <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-none">
+            SpeakEasy<span className="text-rose">!</span>
+          </h1>
+          <p className="text-[0.55rem] font-bold uppercase tracking-[0.25em] text-ink-faint mt-1.5">
+            Your stage-fright survival kit &middot; Est. 2024
+          </p>
+          <div className="border-t border-ink mt-3" />
+          <div className="border-t-2 border-ink mt-0.5" />
         </div>
 
-        {LINES.map((line, i) => (
-          <div
-            key={i}
-            className={`font-display leading-relaxed mb-1.5 transition-opacity duration-300 ${
-              line.color
-            } ${line.big ? "text-2xl sm:text-3xl font-semibold mt-3 not-italic" : "text-xl sm:text-2xl italic"} ${
-              i <= lineIdx ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            {typed[i] || ""}
-            {i === lineIdx && showCursor && lineIdx < LINES.length && (
-              <span
-                className="inline-block w-0.5 h-[1.1em] bg-coral ml-0.5 align-text-bottom"
-                style={{ animation: "blink 0.7s step-end infinite" }}
-              />
-            )}
-          </div>
-        ))}
+        {/* Typewriter lines */}
+        <div className="space-y-1 mb-2">
+          {LINES.map((line, i) => (
+            <p
+              key={i}
+              className={`font-display text-xl sm:text-2xl italic leading-relaxed transition-opacity duration-300 ${line.style} ${
+                i <= lineIdx ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {typed[i] || " "}
+              {i === lineIdx && lineIdx < LINES.length && (
+                <span
+                  className="inline-block w-0.5 h-[1em] bg-rose ml-0.5 align-text-bottom"
+                  style={{ animation: "blink 0.8s step-end infinite" }}
+                />
+              )}
+            </p>
+          ))}
+        </div>
 
-        <div
-          className={`mt-8 transition-all duration-500 ${
-            showButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
+        {/* Enter button */}
+        <div className={`mt-8 transition-all duration-500 ${showButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
           <button
             onClick={onEnter}
-            className="font-display text-base sm:text-lg font-medium px-7 py-3 rounded-full border border-coral/40 bg-coral/10 text-coral transition-all hover:bg-coral/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+            className="font-display text-sm font-black uppercase tracking-wider px-8 py-3.5 bg-rose text-white border-2 border-ink shadow-[3px_3px_0_var(--color-ink)] transition-all duration-150 hover:shadow-[1px_1px_0_var(--color-ink)] hover:translate-x-0.5 hover:translate-y-0.5 active:shadow-none active:translate-x-1 active:translate-y-1"
           >
-            Let&apos;s fix that
+            Let&apos;s fix that →
           </button>
-          <p className="text-xs text-text-muted mt-3">
+          <p className="text-[0.6rem] text-ink-faint mt-4 italic">
             no audience members were harmed in the making of this app
           </p>
         </div>

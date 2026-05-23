@@ -15,7 +15,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SpeakEasy — Stage Fright Survival Kit",
+  title: "SpeakEasy! — Stage Fright Survival Kit",
   description: "A funny but powerful app to help you conquer public speaking anxiety",
 };
 
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#fdf6f0",
+  themeColor: "#f4efe6",
 };
 
 export default function RootLayout({
@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fraunces.variable} ${jakarta.variable} h-full`}>
-      <body className="h-full font-body text-text-main antialiased">
+      <body className="h-full font-body text-ink antialiased">
         {children}
       </body>
     </html>

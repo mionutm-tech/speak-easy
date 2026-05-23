@@ -16,11 +16,7 @@ export default function BreathingPanel() {
       new Promise<void>((resolve) => {
         const id = setTimeout(resolve, ms);
         const check = setInterval(() => {
-          if (cancelRef.current) {
-            clearTimeout(id);
-            clearInterval(check);
-            resolve();
-          }
+          if (cancelRef.current) { clearTimeout(id); clearInterval(check); resolve(); }
         }, 100);
       }),
     []
@@ -39,115 +35,82 @@ export default function BreathingPanel() {
 
   const runCycle = useCallback(async () => {
     while (!cancelRef.current) {
-      setPhase("inhale");
-      await runCountdown(4);
-      if (cancelRef.current) break;
-
-      setPhase("hold");
-      await runCountdown(4);
-      if (cancelRef.current) break;
-
-      setPhase("exhale");
-      await runCountdown(4);
-      if (cancelRef.current) break;
-
+      setPhase("inhale"); await runCountdown(4); if (cancelRef.current) break;
+      setPhase("hold"); await runCountdown(4); if (cancelRef.current) break;
+      setPhase("exhale"); await runCountdown(4); if (cancelRef.current) break;
       setCycles((c) => c + 1);
     }
   }, [runCountdown]);
 
-  const start = useCallback(() => {
-    cancelRef.current = false;
-    setRunning(true);
-    runCycle();
-  }, [runCycle]);
+  const start = useCallback(() => { cancelRef.current = false; setRunning(true); runCycle(); }, [runCycle]);
+  const stop = useCallback(() => { cancelRef.current = true; setRunning(false); setPhase("idle"); setCountdown(4); }, []);
 
-  const stop = useCallback(() => {
-    cancelRef.current = true;
-    setRunning(false);
-    setPhase("idle");
-    setCountdown(4);
-  }, []);
+  useEffect(() => () => { cancelRef.current = true; }, []);
 
-  useEffect(() => {
-    return () => { cancelRef.current = true; };
-  }, []);
-
-  const orbSize = phase === "inhale" || phase === "hold" ? "w-44 h-44 sm:w-48 sm:h-48" : "w-24 h-24 sm:w-28 sm:h-28";
-  const orbGlow = phase === "hold" ? "shadow-[0_0_60px_rgba(126,207,179,0.35)]" : phase === "inhale" ? "shadow-[0_0_40px_rgba(126,207,179,0.25)]" : "";
-
-  const phaseLabel = {
-    idle: "Ready?",
-    inhale: "Breathe in...",
-    hold: "Hold it...",
-    exhale: "Let it go...",
-  }[phase];
-
-  const cycleMessages = [
-    "aim for 3, you overachiever",
-    "keep going, champion",
-    "your brain thanks you",
-    "oxygen levels: excellent",
-    "you're basically a monk now",
-  ];
+  const orbScale = phase === "inhale" || phase === "hold" ? "scale-100" : "scale-[0.5]";
+  const label = { idle: "tap start", inhale: "breathe in", hold: "hold", exhale: "let go" }[phase];
+  const msgs = ["aim for 3", "keep going", "your brain thanks you", "basically a monk", "unstoppable"];
 
   return (
-    <div className="pt-2">
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-peach-400 mb-1">
-        01 — Emergency Oxygen Station
-      </p>
-      <h2 className="font-display text-2xl sm:text-3xl font-semibold text-text-main mb-1">
-        Breathe Like You Mean It
-      </h2>
-      <p className="text-sm text-text-secondary mb-5 leading-relaxed max-w-md">
-        Your brain needs oxygen to form words. Let&apos;s make sure it gets some. This is science, not woo-woo.
-      </p>
-
-      <div className="glass p-5 sm:p-7 flex flex-col items-center gap-5">
-        {/* Orb */}
-        <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
-          <div
-            className={`absolute inset-0 rounded-full border border-mint-200/40 ${
-              running ? "" : "scale-90 opacity-30"
-            }`}
-            style={running ? { animation: "ring-pulse 12s ease-in-out infinite" } : {}}
-          />
-          <div
-            className={`rounded-full bg-gradient-to-br from-mint-300 to-mint-200/40 flex items-center justify-center transition-all duration-[800ms] ease-out ${orbSize} ${orbGlow}`}
-          >
-            <span className="font-display text-sm sm:text-base font-medium text-text-main text-center pointer-events-none">
-              {phaseLabel}
-            </span>
-          </div>
+    <div style={{ animation: "fade-up 0.35s ease" }}>
+      {/* Headline */}
+      <div className="mb-5">
+        <div className="flex items-baseline gap-3 mb-1">
+          <span className="inline-flex items-center justify-center w-8 h-8 bg-rose text-white font-display text-xs font-black border-2 border-ink shadow-[2px_2px_0_var(--color-ink)]">
+            01
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl font-black uppercase leading-none tracking-tight">
+            Breathe,<br /><span className="italic normal-case text-rose">nerd.</span>
+          </h2>
         </div>
-
-        {/* Timer */}
-        <div className="font-display text-4xl font-light text-mint-300 tabular-nums">
-          {running ? countdown : "4 : 4 : 4"}
-        </div>
-
-        {/* Controls */}
-        <div className="flex gap-3">
-          <button
-            onClick={running ? stop : start}
-            className={`text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-full border transition-all ${
-              running
-                ? "bg-mint-300 text-white border-mint-300"
-                : "border-mint-300 text-mint-300 bg-mint-100/50 hover:bg-mint-200/60"
-            }`}
-          >
-            {running ? "Stop" : "Start Breathing"}
-          </button>
-          <button
-            onClick={() => { stop(); setCycles(0); }}
-            className="text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-full border border-mint-300/40 text-mint-300 bg-mint-100/30 hover:bg-mint-200/40 transition-all"
-          >
-            Reset
-          </button>
-        </div>
-
-        <p className="text-xs text-text-muted text-center">
-          Cycles completed: {cycles} — {cycleMessages[Math.min(cycles, cycleMessages.length - 1)]}
+        <p className="text-sm text-ink-light mt-2 leading-relaxed">
+          Your brain needs oxygen to form words. This is <span className="underline decoration-rose/40">science</span>, not woo-woo.
         </p>
+      </div>
+
+      {/* Card */}
+      <div className="bg-sage-bg border-2 border-ink p-6 sm:p-8 shadow-[3px_3px_0_var(--color-ink)]">
+        <div className="flex flex-col items-center">
+          {/* Orb */}
+          <div className="relative w-40 h-40 flex items-center justify-center mb-5">
+            <div
+              className={`w-40 h-40 rounded-full bg-sage-soft border-2 border-sage/30 flex items-center justify-center transition-all duration-[1200ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${orbScale}`}
+            >
+              <div className="text-center">
+                <p className="font-display text-sm font-bold uppercase tracking-wider text-ink">{label}</p>
+                {running && (
+                  <p className="font-display text-4xl font-black text-sage mt-1 tabular-nums">{countdown}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={running ? stop : start}
+              className={`font-display text-xs font-black uppercase tracking-wider px-6 py-2.5 border-2 border-ink transition-all duration-150 active:shadow-none active:translate-x-0.5 active:translate-y-0.5 ${
+                running
+                  ? "bg-sage text-white shadow-[2px_2px_0_var(--color-ink)]"
+                  : "bg-cream text-ink shadow-[2px_2px_0_var(--color-ink)] hover:bg-sage-soft"
+              }`}
+            >
+              {running ? "Stop" : "Start"}
+            </button>
+            {cycles > 0 && (
+              <button
+                onClick={() => { stop(); setCycles(0); }}
+                className="font-display text-xs font-bold uppercase tracking-wider px-4 py-2.5 text-ink-faint hover:text-ink transition-colors"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <p className="text-xs text-ink-faint text-center font-medium">
+            {cycles} {cycles === 1 ? "cycle" : "cycles"} — {msgs[Math.min(cycles, msgs.length - 1)]}
+          </p>
+        </div>
       </div>
     </div>
   );
